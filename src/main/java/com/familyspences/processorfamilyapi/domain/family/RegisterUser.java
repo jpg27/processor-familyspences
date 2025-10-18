@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.UUID;
 
+@Entity
 public class RegisterUser {
     @Id
     @GeneratedValue(strategy =  GenerationType.UUID)
