@@ -1,4 +1,4 @@
-package com.familyspences.processorfamilyapi.messages.task;
+package com.familyspences.processorfamilyapi.messaging.task;
 
 import com.familyspences.processorfamilyapi.config.messages.task.TaskQueueConfig;
 import com.familyspences.processorfamilyapi.domain.task.Tasks;
@@ -22,25 +22,25 @@ public class TaskConsumer {
 
     @RabbitListener(queues = TaskQueueConfig.QUEUE_TASK_CREATE)
     public void handleTaskCreate(Tasks task){
-        log.info("📥 Received Task CREATE event: {}", task);
+        log.info(" Received Task CREATE event: {}", task);
         try {
             taskService.saveFromProducer(task);
-            log.info("✅ Task saved successfully: {}", task.getId());
+            log.info(" Task saved successfully: {}", task.getId());
         } catch (Exception e) {
-            log.error("❌ Error processing Task CREATE event. Task ID: {}. Error: {}",
+            log.error(" Error processing Task CREATE event. Task ID: {}. Error: {}",
                     task.getId(), e.getMessage(), e);
         }
     }
 
     @RabbitListener(queues = TaskQueueConfig.QUEUE_TASK_UPDATE)
     public void handleTaskUpdate(Tasks task) {
-        log.info("📥 Received Task UPDATE event: {}", task);
+        log.info(" Received Task UPDATE event: {}", task);
         taskService.updateFromProducer(task);
     }
 
     @RabbitListener(queues = TaskQueueConfig.QUEUE_TASK_DELETE)
     public void handleTaskDelete(Map<String, String> data) {
-        log.info("📥 Received Task DELETE event: {}", data);
+        log.info(" Received Task DELETE event: {}", data);
         taskService.deleteFromProducer(data);
     }
 }

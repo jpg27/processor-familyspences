@@ -1,6 +1,5 @@
 package com.familyspences.processorfamilyapi.domain.task;
 
-import com.familyspences.processorfamilyapi.domain.vacation.Vacation;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
