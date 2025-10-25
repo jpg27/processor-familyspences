@@ -2,49 +2,87 @@ package com.familyspences.processorfamilyapi.service.goals;
 
 import com.familyspences.processorfamilyapi.domain.goals.Goals;
 import com.familyspences.processorfamilyapi.repository.goals.GoalsRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
 public class GoalService {
 
+    private static final Logger log = LoggerFactory.getLogger(GoalService.class);
     private final GoalsRepository repository;
 
     public GoalService(GoalsRepository repository) {
         this.repository = repository;
     }
 
-    public List<Goals> getAllGoals() {
-        return repository.findAll();
+    @Transactional
+    public void saveFromProducer(Goals goal) {
+        log.info("Saving goal from producer: {}", goal);
+        repository.save(goal);
     }
 
-    public Optional<Goals> getGoalById(UUID id) {
-        return repository.findById(id);
+    @Transactional
+    public void updateFromProducer(Goals updatedGoal) {
+        try {
+            UUID goalId = updatedGoal.getId();
+            UUID categoryId = updatedGoal.getCategoryId();
+
+            if (goalId == null || categoryId == null) {
+                log.warn("Missing categoryId or id in update event: {}", updatedGoal);
+                return;
+            }
+
+            Optional<Goals> existingOpt = repository.findByCategoryIdAndId(categoryId, goalId);
+            if (existingOpt.isEmpty()) {
+                log.warn("Goal not found for update. Category: {}, Goal: {}", categoryId, goalId);
+                return;
+            }
+
+            Goals existing = existingOpt.get();
+            existing.setName(updatedGoal.getName());
+            existing.setDescription(updatedGoal.getDescription());
+            existing.setCategoryId(updatedGoal.getCategoryId());
+            existing.setSavingsCap(updatedGoal.getSavingsCap());
+            existing.setDeadline(updatedGoal.getDeadline());
+            existing.setDailyGoal(updatedGoal.getDailyGoal());
+
+            repository.save(existing);
+            log.info("Goal updated successfully: {} for category {}", goalId, categoryId);
+
+        } catch (Exception e) {
+            log.error("Error processing Goal UPDATE event: {}", e.getMessage(), e);
+        }
     }
 
-    public Goals createGoal(Goals goal) {
-        return repository.save(goal);
-    }
+    @Transactional
+    public void deleteFromProducer(Map<String, String> data) {
+        try {
+            String categoryStr = data.get("categoryId");
+            String goalStr = data.get("goalId");
 
-    public Optional<Goals> updateGoal(UUID id, Goals goalDetails) {
-        return repository.findById(id).map(goal -> {
-            goal.setName(goalDetails.getName());
-            goal.setDescription(goalDetails.getDescription());
-            goal.setSavingsCap(goalDetails.getSavingsCap());
-            goal.setDeadline(goalDetails.getDeadline());
-            goal.setDailyGoal(goalDetails.getDailyGoal());
-            goal.setCategoryId(goalDetails.getCategoryId());
-            return repository.save(goal);
-        });
-    }
+            if (categoryStr == null || goalStr == null) {
+                log.warn("Missing fields in DELETE event: {}", data);
+                return;
+            }
 
-    public boolean deleteGoal(UUID id) {
-        return repository.findById(id).map(goal -> {
-            repository.delete(goal);
-            return true;
-        }).orElse(false);
+            UUID categoryId = UUID.fromString(categoryStr);
+            UUID goalId = UUID.fromString(goalStr);
+
+            if (repository.existsByCategoryIdAndId(categoryId, goalId)) {
+                repository.deleteByCategoryIdAndId(categoryId, goalId);
+                log.info("Goal deleted successfully: {} for category {}", goalId, categoryId);
+            } else {
+                log.warn("Goal with id {} not found for category {}", goalId, categoryId);
+            }
+
+        } catch (Exception e) {
+            log.error("Error deleting goal from producer event: {}", e.getMessage(), e);
+        }
     }
 }
