@@ -1,20 +1,18 @@
 package com.familyspences.processorfamilyapi.domain.pet;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+
 import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
 @Table(name = "pets")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Pet {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
     @Column(name = "full_name", nullable = false, length = 100)
@@ -27,28 +25,14 @@ public class Pet {
     private String breed;
 
     @Column(name = "birth_date", nullable = false)
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    @JsonDeserialize(using = LocalDateDeserializer.class)
     private LocalDate birthDate;
 
     @Column(name = "family_id", nullable = false)
     private UUID familyId;
 
-    // Constructor vacío
-    public Pet() {
+    public Pet() { // Noncompliant - method is empty
     }
 
-    // Constructor con todos los atributos
-    public Pet(UUID id, String fullName, String petType, String breed, LocalDate birthDate, UUID familyId) {
-        this.id = id;
-        this.fullName = fullName;
-        this.petType = petType;
-        this.breed = breed;
-        this.birthDate = birthDate;
-        this.familyId = familyId;
-    }
-
-    // Getters y setters
     public UUID getId() {
         return id;
     }
@@ -93,21 +77,7 @@ public class Pet {
         return familyId;
     }
 
-    // ✅ JsonIgnore en el SETTER para que no se pueda enviar en el request body
-    @JsonIgnore
     public void setFamilyId(UUID familyId) {
         this.familyId = familyId;
-    }
-
-    @Override
-    public String toString() {
-        return "Pet{" +
-                "id=" + id +
-                ", fullName='" + fullName + '\'' +
-                ", petType='" + petType + '\'' +
-                ", breed='" + breed + '\'' +
-                ", birthDate=" + birthDate +
-                ", familyId=" + familyId +
-                '}';
     }
 }
