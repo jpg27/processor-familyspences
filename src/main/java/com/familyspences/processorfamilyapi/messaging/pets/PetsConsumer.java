@@ -22,7 +22,7 @@ public class PetsConsumer {
         log.info("========================================");
     }
 
-    @RabbitListener(queues = "q.pet.create")  // ✅ Valor directo en lugar de constante
+    @RabbitListener(queues = "q.pet.create")  //
     public void handlePetCreate(Pet pet){
         log.info("Received Pet CREATE event: {}", pet);
         try {
@@ -34,13 +34,13 @@ public class PetsConsumer {
         }
     }
 
-    @RabbitListener(queues = "q.pet.update")  // ✅ Valor directo
+    @RabbitListener(queues = "q.pet.update")  //
     public void handlePetUpdate(Pet pet) {
         log.info("Received Pet UPDATE event: {}", pet);
         petService.updateFromProducer(pet);
     }
 
-    @RabbitListener(queues = "q.pet.delete")  // ✅ Valor directo
+    @RabbitListener(queues = "q.pet.delete")  //
     public void handlePetDelete(Map<String, String> data) {
         log.info("Received Pet DELETE event: {}", data);
         petService.deleteFromProducer(data);

@@ -26,6 +26,4 @@ public class PetsQueueConfig {
         log.info("PetsQueueConfig INITIALIZED!");
         log.info("========================================");
     }
-
-    // ... resto del código igual
 }
