@@ -1,6 +1,5 @@
 package com.familyspences.processorfamilyapi.service.vacation;
 
-
 import com.familyspences.processorfamilyapi.domain.vacation.Vacation;
 import com.familyspences.processorfamilyapi.repository.vacation.VacationRepository;
 import org.springframework.stereotype.Service;
