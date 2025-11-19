@@ -1,6 +1,7 @@
 package com.familyspences.processorfamilyapi.service.goals;
 
 import com.familyspences.processorfamilyapi.domain.goals.Goals;
+import com.familyspences.processorfamilyapi.config.messages.goals.GoalDTO;
 import com.familyspences.processorfamilyapi.repository.goals.GoalsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,38 +23,53 @@ public class GoalService {
     }
 
     @Transactional
-    public void saveFromProducer(Goals goal) {
-        log.info("Saving goal from producer: {}", goal);
+    public void saveFromProducer(GoalDTO goalDTO) {
+        log.info("Saving goal from producer: {}", goalDTO.getId());
+
+        Goals goal = new Goals();
+        goal.setId(goalDTO.getId());
+        goal.setFamilyId(goalDTO.getFamilyId());
+        goal.setCategoryId(goalDTO.getCategoryId());
+        goal.setName(goalDTO.getName());
+        goal.setDescription(goalDTO.getDescription());
+        goal.setSavingsCap(goalDTO.getSavingsCap());
+        goal.setDeadline(goalDTO.getDeadline());
+        goal.setDailyGoal(goalDTO.getDailyGoal());
+
         repository.save(goal);
+        log.info("Goal saved: {}", goal.getId());
     }
 
     @Transactional
-    public void updateFromProducer(Goals updatedGoal) {
-        try {
-            UUID goalId = updatedGoal.getId();
-            UUID categoryId = updatedGoal.getCategoryId();
+    public void updateFromProducer(GoalDTO goalDTO) {
+        log.info("Updating goal from producer: {}");
 
-            if (goalId == null || categoryId == null) {
-                log.warn("Missing categoryId or id in update event: {}", updatedGoal);
+        try {
+            UUID goalId = goalDTO.getId();
+            UUID familyId = goalDTO.getFamilyId();
+
+            if (goalId == null || familyId == null) {
+                log.warn("Missing familyId or id in update event: {}", goalDTO);
                 return;
             }
 
-            Optional<Goals> existingOpt = repository.findByCategoryIdAndId(categoryId, goalId);
+            Optional<Goals> existingOpt = repository.findByFamilyIdAndId(familyId, goalId);
             if (existingOpt.isEmpty()) {
-                log.warn("Goal not found for update. Category: {}, Goal: {}", categoryId, goalId);
+                log.warn("Goal not found for update. Family: {}, Goal: {}", familyId, goalId);
                 return;
             }
 
             Goals existing = existingOpt.get();
-            existing.setName(updatedGoal.getName());
-            existing.setDescription(updatedGoal.getDescription());
-            existing.setCategoryId(updatedGoal.getCategoryId());
-            existing.setSavingsCap(updatedGoal.getSavingsCap());
-            existing.setDeadline(updatedGoal.getDeadline());
-            existing.setDailyGoal(updatedGoal.getDailyGoal());
+            existing.setName(goalDTO.getName());
+            existing.setDescription(goalDTO.getDescription());
+            existing.setFamilyId(familyId);
+            existing.setCategoryId(goalDTO.getCategoryId());
+            existing.setSavingsCap(goalDTO.getSavingsCap());
+            existing.setDeadline(goalDTO.getDeadline());
+            existing.setDailyGoal(goalDTO.getDailyGoal());
 
             repository.save(existing);
-            log.info("Goal updated successfully: {} for category {}", goalId, categoryId);
+            log.info("Goal updated successfully: {} for family {}", goalId, familyId);
 
         } catch (Exception e) {
             log.error("Error processing Goal UPDATE event: {}", e.getMessage(), e);
@@ -63,22 +79,22 @@ public class GoalService {
     @Transactional
     public void deleteFromProducer(Map<String, String> data) {
         try {
-            String categoryStr = data.get("categoryId");
+            String familyStr = data.get("familyId");
             String goalStr = data.get("goalId");
 
-            if (categoryStr == null || goalStr == null) {
+            if (familyStr == null || goalStr == null) {
                 log.warn("Missing fields in DELETE event: {}", data);
                 return;
             }
 
-            UUID categoryId = UUID.fromString(categoryStr);
+            UUID familyId = UUID.fromString(familyStr);
             UUID goalId = UUID.fromString(goalStr);
 
-            if (repository.existsByCategoryIdAndId(categoryId, goalId)) {
-                repository.deleteByCategoryIdAndId(categoryId, goalId);
-                log.info("Goal deleted successfully: {} for category {}", goalId, categoryId);
+            if (repository.existsByFamilyIdAndId(familyId, goalId)) {
+                repository.deleteByFamilyIdAndId(familyId, goalId);
+                log.info("Goal deleted successfully: {} for family {}", goalId, familyId);
             } else {
-                log.warn("Goal with id {} not found for category {}", goalId, categoryId);
+                log.warn("Goal with id {} not found for family {}", goalId, familyId);
             }
 
         } catch (Exception e) {

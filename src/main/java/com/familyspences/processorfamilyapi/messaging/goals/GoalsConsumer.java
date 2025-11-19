@@ -1,5 +1,6 @@
 package com.familyspences.processorfamilyapi.messaging.goals;
 
+import com.familyspences.processorfamilyapi.config.messages.goals.GoalDTO;
 import com.familyspences.processorfamilyapi.config.messages.goals.GoalsQueueConfig;
 import com.familyspences.processorfamilyapi.domain.goals.Goals;
 import com.familyspences.processorfamilyapi.service.goals.GoalService;
@@ -21,21 +22,21 @@ public class GoalsConsumer {
     }
 
     @RabbitListener(queues = GoalsQueueConfig.QUEUE_GOAL_CREATE)
-    public void handleGoalCreate(Goals goal) {
-        log.info("Received Goal CREATE event: {}", goal);
+    public void handleGoalCreate(GoalDTO goalDTO) {
+        log.info("Received Goal CREATE event: {}", goalDTO.getId());
         try {
-            goalService.saveFromProducer(goal);
-            log.info("Goal saved successfully: {}", goal.getId());
+            goalService.saveFromProducer(goalDTO);
+            log.info("Goal saved successfully: {}", goalDTO.getId());
         } catch (Exception e) {
             log.error("Error processing Goal CREATE event. Goal ID: {}. Error: {}",
-                    goal.getId(), e.getMessage(), e);
+                    goalDTO.getId(), e.getMessage(), e);
         }
     }
 
     @RabbitListener(queues = GoalsQueueConfig.QUEUE_GOAL_UPDATE)
-    public void handleGoalUpdate(Goals goal) {
-        log.info("Received Goal UPDATE event: {}", goal);
-        goalService.updateFromProducer(goal);
+    public void handleGoalUpdate(GoalDTO goalDTO) {
+        log.info("Received Goal UPDATE event: {}", goalDTO.getId());
+        goalService.updateFromProducer(goalDTO);
     }
 
     @RabbitListener(queues = GoalsQueueConfig.QUEUE_GOAL_DELETE)
