@@ -1,15 +1,10 @@
 package com.familyspences.processorfamilyapi.domain.goals;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
-
 
 @Entity
 @Table(name = "goal")
@@ -19,6 +14,10 @@ public class Goals {
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id_goal", updatable = false, nullable = false, unique = true)
     private UUID id;
+
+    @Column(name = "family_id", nullable = false)
+    @NotNull(message = "La familia no puede estar vacía")
+    private UUID familyId;
 
     @Column(name = "name_goal", nullable = false, length = 150)
     @NotBlank(message = "El nombre no puede estar vacío")
@@ -49,22 +48,20 @@ public class Goals {
 
     public Goals() {}
 
-    public Goals(UUID id, String name, String description, UUID categoryId, double savingsCap, LocalDateTime deadline, double dailyGoal) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.categoryId = categoryId;
-        this.savingsCap = savingsCap;
-        this.deadline = deadline;
-        this.dailyGoal = dailyGoal;
-    }
-
     public UUID getId() {
         return id;
     }
 
     public void setId(UUID id) {
         this.id = id;
+    }
+
+    public UUID getFamilyId() {
+        return familyId;
+    }
+
+    public void setFamilyId(UUID familyId) {
+        this.familyId = familyId;
     }
 
     public String getName() {

@@ -16,7 +16,7 @@ public class DocumentType {
     private String type;
     @OneToMany(mappedBy = "documentType")
     @JsonIgnore
-    private List<RegisterUser> users;
+//    private List<RegisterUser> users;
 
 
 
