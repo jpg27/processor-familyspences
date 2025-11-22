@@ -1,44 +1,34 @@
-package com.familyspences.processorfamilyapi.domain.pet;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.*;
+package com.familyspences.processorfamilyapi.config.messages.pets;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
-@Entity
-@Table(name = "pets")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class Pet {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+public class petsDTO {
     private UUID id;
-
-    @Column(name = "full_name", nullable = false, length = 100)
+    private UUID familyId;
     private String fullName;
-
-    @Column(name = "pet_type", nullable = false, length = 100)
     private String petType;
-
-    @Column(name = "breed", nullable = false, length = 100)
     private String breed;
-
-    @Column(name = "birth_date", nullable = false)
     private LocalDate birthDate;
 
-    @Column(name = "family_id", nullable = false)
-    private UUID familyId;
+    // Constructor vacío
+    public petsDTO() {}
 
-    public Pet() { // Noncompliant - method is empty
-    }
-
+    // Getters y Setters
     public UUID getId() {
         return id;
     }
 
     public void setId(UUID id) {
         this.id = id;
+    }
+
+    public UUID getFamilyId() {
+        return familyId;
+    }
+
+    public void setFamilyId(UUID familyId) {
+        this.familyId = familyId;
     }
 
     public String getFullName() {
@@ -71,13 +61,5 @@ public class Pet {
 
     public void setBirthDate(LocalDate birthDate) {
         this.birthDate = birthDate;
-    }
-
-    public UUID getFamilyId() {
-        return familyId;
-    }
-
-    public void setFamilyId(UUID familyId) {
-        this.familyId = familyId;
     }
 }
