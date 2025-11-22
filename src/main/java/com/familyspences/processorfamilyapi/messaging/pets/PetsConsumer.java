@@ -1,6 +1,6 @@
 package com.familyspences.processorfamilyapi.messaging.pets;
 
-import com.familyspences.processorfamilyapi.domain.pet.Pet;
+import com.familyspences.processorfamilyapi.config.messages.pets.petsDTO;  // ✅ Importa PetDTO
 import com.familyspences.processorfamilyapi.service.pet.PetService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,28 +22,27 @@ public class PetsConsumer {
         log.info("========================================");
     }
 
-    @RabbitListener(queues = "q.pet.create")  //
-    public void handlePetCreate(Pet pet){
-        log.info("Received Pet CREATE event: {}", pet);
+    @RabbitListener(queues = "q.pet.create")
+    public void handlePetCreate(petsDTO petDTO){  // ✅ PetDTO con mayúscula
+        log.info("✅ Received Pet CREATE event: {}", petDTO.getId());
         try {
-            petService.saveFromProducer(pet);
-            log.info("Pet saved successfully: {}", pet.getId());
+            petService.saveFromProducer(petDTO);  // ✅ Usa petDTO (variable)
+            log.info("✅ Pet saved successfully: {}", petDTO.getId());
         } catch (Exception e) {
-            log.error("Error processing Pet CREATE event. Pet ID: {}. Error: {}",
-                    pet.getId(), e.getMessage(), e);
+            log.error("❌ Error processing Pet CREATE event. Pet ID: {}. Error: {}",
+                    petDTO.getId(), e.getMessage(), e);
         }
     }
 
-    @RabbitListener(queues = "q.pet.update")  //
-    public void handlePetUpdate(Pet pet) {
-        log.info("Received Pet UPDATE event: {}", pet);
-        petService.updateFromProducer(pet);
+    @RabbitListener(queues = "q.pet.update")
+    public void handlePetUpdate(petsDTO petDTO) {  // ✅ PetDTO con mayúscula
+        log.info("✅ Received Pet UPDATE event: {}", petDTO.getId());
+        petService.updateFromProducer(petDTO);  // ✅ Usa petDTO (variable)
     }
 
-    @RabbitListener(queues = "q.pet.delete")  //
+    @RabbitListener(queues = "q.pet.delete")
     public void handlePetDelete(Map<String, String> data) {
-        log.info("Received Pet DELETE event: {}", data);
+        log.info("✅ Received Pet DELETE event: {}", data);
         petService.deleteFromProducer(data);
     }
 }
-

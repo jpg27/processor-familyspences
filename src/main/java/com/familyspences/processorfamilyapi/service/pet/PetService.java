@@ -1,5 +1,6 @@
 package com.familyspences.processorfamilyapi.service.pet;
 
+import com.familyspences.processorfamilyapi.config.messages.pets.petsDTO;
 import com.familyspences.processorfamilyapi.domain.pet.Pet;
 import com.familyspences.processorfamilyapi.repository.pet.IRepositoryPet;
 import org.slf4j.Logger;
@@ -22,33 +23,44 @@ public class PetService {
     }
 
     @Transactional
-    public void saveFromProducer(Pet pet) {
-        log.info("Saving pet from producer: {}", pet);
+    public void saveFromProducer(petsDTO petDTO) {
+        log.info("Guardando pet desde producer...");
+
+        Pet pet = new Pet();
+        pet.setId(petDTO.getId());
+        pet.setFamilyId(petDTO.getFamilyId());
+        pet.setFullName(petDTO.getFullName());
+        pet.setPetType(petDTO.getPetType());
+        pet.setBreed(petDTO.getBreed());
+        pet.setBirthDate(petDTO.getBirthDate());
+
         repository.save(pet);
+        log.info(" Pet guardado: {}", pet.getId());
     }
 
     @Transactional
-    public void updateFromProducer(Pet updatedPet) {
+    public void updateFromProducer(petsDTO petDTO) {
+        log.info("Actualizando pet desde producer...");
         try {
-            UUID petId = updatedPet.getId();
-            UUID familyId = updatedPet.getFamilyId();
+            UUID petId = petDTO.getId();
+            UUID familyId = petDTO.getFamilyId();
 
             if (petId == null || familyId == null) {
-                log.warn("Missing familyId or id in update event: {}", updatedPet);
+                log.warn("Missing familyId or id in update event: {}", petDTO);
                 return;
             }
 
             Optional<Pet> existingOpt = repository.findByFamilyIdAndId(familyId, petId);
             if (existingOpt.isEmpty()) {
-                log.warn("Pet not found for update. Family: {}, Pet: {}", familyId, petId);
+                log.warn(" Pet not found for update. Family: {}, Pet: {}", familyId, petId);
                 return;
             }
 
             Pet existing = existingOpt.get();
-            existing.setFullName(updatedPet.getFullName());
-            existing.setPetType(updatedPet.getPetType());
-            existing.setBreed(updatedPet.getBreed());
-            existing.setBirthDate(updatedPet.getBirthDate());
+            existing.setFullName(petDTO.getFullName());
+            existing.setPetType(petDTO.getPetType());
+            existing.setBreed(petDTO.getBreed());
+            existing.setBirthDate(petDTO.getBirthDate());
 
             repository.save(existing);
             log.info("Pet updated successfully: {} for family {}", petId, familyId);
@@ -60,6 +72,7 @@ public class PetService {
 
     @Transactional
     public void deleteFromProducer(Map<String, String> data) {
+        log.info("Eliminando pet desde producer...");
         try {
             String familyStr = data.get("familyId");
             String petStr = data.get("petId");

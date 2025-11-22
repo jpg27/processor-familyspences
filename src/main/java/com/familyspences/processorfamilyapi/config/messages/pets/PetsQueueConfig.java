@@ -26,4 +26,48 @@ public class PetsQueueConfig {
         log.info("PetsQueueConfig INITIALIZED!");
         log.info("========================================");
     }
+
+    // EXCHANGE
+    @Bean
+    public TopicExchange petExchange() {
+        return new TopicExchange(EXCHANGE_NAME, true, false);
+    }
+
+    // QUEUES
+    @Bean
+    public Queue petCreateQueue() {
+        return new Queue(QUEUE_PET_CREATE, true);
+    }
+
+    @Bean
+    public Queue petUpdateQueue() {
+        return new Queue(QUEUE_PET_UPDATE, true);
+    }
+
+    @Bean
+    public Queue petDeleteQueue() {
+        return new Queue(QUEUE_PET_DELETE, true);
+    }
+
+    // BINDINGS
+    @Bean
+    public Binding bindingCreate() {
+        return BindingBuilder.bind(petCreateQueue())
+                .to(petExchange())
+                .with(ROUTING_KEY_CREATE);
+    }
+
+    @Bean
+    public Binding bindingUpdate() {
+        return BindingBuilder.bind(petUpdateQueue())
+                .to(petExchange())
+                .with(ROUTING_KEY_UPDATE);
+    }
+
+    @Bean
+    public Binding bindingDelete() {
+        return BindingBuilder.bind(petDeleteQueue())
+                .to(petExchange())
+                .with(ROUTING_KEY_DELETE);
+    }
 }
