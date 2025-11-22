@@ -1,5 +1,6 @@
 package com.familyspences.processorfamilyapi.service.task;
 
+import com.familyspences.processorfamilyapi.config.messages.task.TaskDTO;
 import com.familyspences.processorfamilyapi.domain.task.Tasks;
 import com.familyspences.processorfamilyapi.repository.task.ITaskRepository;
 import org.slf4j.Logger;
@@ -22,41 +23,55 @@ public class TaskService {
     }
 
     @Transactional
-    public void saveFromProducer(Tasks task) {
-        log.info("Saving task from producer: {}", task);
-        repository.save(task);
-    }
+        public void saveFromProducer(TaskDTO taskDTO) {
+            log.info("💾 Guardando task desde producer...");
+
+            Tasks task = new Tasks();
+            task.setId(taskDTO.getId());
+            task.setFamilyId(taskDTO.getFamilyId());
+            task.setName(taskDTO.getName());
+            task.setDescription(taskDTO.getDescription());
+            task.setStatus(taskDTO.isStatus());
+            task.setCreationDate(taskDTO.getCreationDate());
+            task.setIdResponsible(taskDTO.getIdResponsible());
+
+            repository.save(task);
+            log.info("✅ Task guardada: {}", task.getId());
+        }
+
 
     @Transactional
-    public void updateFromProducer(Tasks updatedTask) {
+    public void updateFromProducer(TaskDTO taskDTO) {
+        log.info("🔄 Actualizando task desde producer...");
         try {
-            UUID taskId = updatedTask.getId();
-            UUID familyId = updatedTask.getFamilyId();
+            UUID taskId = taskDTO.getId();
+            UUID familyId = taskDTO.getFamilyId();
 
             if (taskId == null || familyId == null) {
-                log.warn(" Missing familyId or id in update event: {}", updatedTask);
+                log.warn("⚠️ Missing familyId or id in update event: {}", taskDTO);
                 return;
             }
 
             Optional<Tasks> existingOpt = repository.findByFamilyIdAndId(familyId, taskId);
             if (existingOpt.isEmpty()) {
-                log.warn(" Task not found for update. Family: {}, Task: {}", familyId, taskId);
+                log.warn("⚠️ Task not found for update. Family: {}, Task: {}", familyId, taskId);
                 return;
             }
 
             Tasks existing = existingOpt.get();
-            existing.setName(updatedTask.getName());
-            existing.setDescription(updatedTask.getDescription());
-            existing.setStatus(updatedTask.isStatus());
-            existing.setCreationDate(updatedTask.getCreationDate());
-            existing.setIdExpenseve(updatedTask.getIdExpenseve());
-            existing.setIdResponsible(updatedTask.getIdResponsible());
+            existing.setName(taskDTO.getName());
+            existing.setDescription(taskDTO.getDescription());
+            existing.setStatus(taskDTO.isStatus());
+            existing.setCreationDate(taskDTO.getCreationDate());
+            existing.setIdExpenseve(taskDTO.getIdExpenseve());
+            existing.setIdVacations(taskDTO.getIdVacations());
+            existing.setIdResponsible(taskDTO.getIdResponsible());
 
             repository.save(existing);
-            log.info("Task updated successfully: {} for family {}", taskId, familyId);
+            log.info("✅ Task updated successfully: {} for family {}", taskId, familyId);
 
         } catch (Exception e) {
-            log.error(" Error processing Task UPDATE event: {}", e.getMessage(), e);
+            log.error("❌ Error processing Task UPDATE event: {}", e.getMessage(), e);
         }
     }
 
